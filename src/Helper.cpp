@@ -18,7 +18,7 @@ void Helper::getBezierLine(int segments, std::vector<glm::vec3>* pts, glm::vec3*
     }
 }
 
-//helper to get random vector in the direction of X,Z in which blade of grass will lean towards
+// helper to get random vector in the direction of X,Z in which blade of grass will lean towards
 glm::vec3 Helper::randomDirectionXZ() {
     glm::vec3 v(ofRandomf(), 0.f, ofRandomf());
     return glm::length2(v) > VECTOR_LENGTH_CUTOFF_POINT ? glm::normalize(v) : glm::vec3(1, 0, 0);

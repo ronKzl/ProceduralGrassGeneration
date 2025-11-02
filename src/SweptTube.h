@@ -24,7 +24,6 @@ public:
     // get the mesh for rendering
     const ofMesh& getMesh() const { return mesh; }
 
-private:
     void computeParallelTransportFrames(); // build per-point frames (T, N, B)
     void generateRingsAndMesh(); // create vertices, normals, uvs, indices
     ofIndexType getVertexIndex(int ring, int col);
