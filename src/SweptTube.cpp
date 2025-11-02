@@ -1,8 +1,8 @@
 #include "SweptTube.h"
 #include "Constants.h"
 
-void SweptTube::setCenterline(const std::vector<glm::vec3>& pts) { 
-    this->centerline = std::move(pts);
+void SweptTube::setCenterline(std::vector<glm::vec3>& pts) { 
+    this->centerline = pts;
 }
 
 void SweptTube::setRadius(float baseRadius, float tipRadius) { 

@@ -10,7 +10,7 @@ Takes a center curve
 class SweptTube {
 public:
     // sets the centerline along which the sweep will happen
-    void setCenterline(const std::vector<glm::vec3>& pts);
+    void setCenterline(std::vector<glm::vec3>& pts);
 
     // sets tube radius (linear taper from base to tip)
     void setRadius(float baseRadius, float tipRadius);

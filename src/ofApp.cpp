@@ -10,18 +10,32 @@ void ofApp::setup(){
     ofEnableDepthTest();
     ofSetFrameRate(60);
     
-    std::vector<glm::vec3> centerline;
+    /*std::vector<glm::vec3> centerline;
     glm::vec3 p0(0, 0, 0); // base
     glm::vec3 p1(50, 70, 55); // rng this
     glm::vec3 p2(-15, 100, -10); // rng this // glm::vec3 p2(-15, 140, -10);
     glm::vec3 p3(0, 0, 0); // rng this
 
     // actually just rework it to bezier 3points
-    toolbox.getBezierLine(100, &p0, &p1, &p2, &p3 ,&centerline); //10 here must correspond to 10 in set resolution
+    toolbox.getBezierLine(100, &centerline, &p0, &p1, &p2); //10 here must correspond to 10 in set resolution
     stem.setCenterline(centerline);     
     stem.setRadius(10.0f, 1.0f);       // base -> tip
     // tube segments on the sides (stop sign 5 increase to do circle),  amount of circles going up
     stem.setResolution(20, 100);       
+    stem.build();*/
+
+    ofSetRandomSeed(SEED);
+
+    
+    
+    glm::vec3 p0, p1, p2;
+    toolbox.generateBezier3PointVectors(glm::vec3(0, 0, 0), p0, p1, p2);
+
+    std::vector<glm::vec3> centerline;
+    toolbox.getBezierLine(100, &centerline, &p0, &p1, &p2); // cubic=false by default
+    stem.setCenterline(centerline);
+    stem.setRadius(10.f, 1.f);
+    stem.setResolution(20, centerline.size() - 1);
     stem.build();
 }
 
@@ -50,6 +64,31 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+    SEED++;
+    std::cout << SEED << std::endl;
+    ofSetRandomSeed(SEED);
+
+    
+    
+    glm::vec3 p0, p1, p2, p3;
+    bool fourBezier = false;
+    // 49-51 if we do a 3point or a 4point bezier spine
+    if (ofRandom(1.0f) >= 0.51) {
+        toolbox.generateBezier3PointVectors(glm::vec3(0, 0, 0), p0, p1, p2);
+        std::cout << "doing 3 point" << std::endl;
+    }
+    else {
+        toolbox.generateBezier4PointVectors(glm::vec3(0, 0, 0), p0, p1, p2, p3);
+        fourBezier = true;
+    }
+    
+
+    std::vector<glm::vec3> centerline;
+    toolbox.getBezierLine(100, &centerline, &p0, &p1, &p2, &p3, fourBezier); 
+    stem.setCenterline(centerline);
+    stem.setRadius(10.f, 1.f);
+    stem.setResolution(20, centerline.size() - 1);
+    stem.build();
 
 }
 
