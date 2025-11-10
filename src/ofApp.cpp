@@ -1,16 +1,16 @@
-#include "ofApp.h"
+﻿#include "ofApp.h"
 
 
 
 //General TODO:
-// generating many branches and placing them along the spine
-// branch RNG
+// Put branch generation logic into a seperate class
 // generating many seeds and clustering them on each one of the branches
 // seed RNG 
-// ------ doable next weekend (8,9)
 // combine all the meshes into 1 mesh??
-// writing a raytracer for this or some other offline rendering technique that I don't know about yet
-//------ (15,16)
+// ----- 15, 16 goal
+// writing a raytracer (for triangles? or like the entire mesh not sure how to works find out)
+// for this or find some other offline rendering technique, exporting mesh?
+// ------ 22, 23
 
 
 //--------------------------------------------------------------
@@ -22,28 +22,14 @@ void ofApp::setup(){
     ofSetSmoothLighting(true); // Smooth lighting calculation
 
 
-    // Initialize a point light
+    // Initialize a point light just for real time view
     light.setPointLight();
     light.setPosition(500, 500, 500); // Set the light's position
     
-    /*std::vector<glm::vec3> centerline;
-    glm::vec3 p0(0, 0, 0); // base
-    glm::vec3 p1(50, 70, 55); // rng this
-    glm::vec3 p2(-15, 100, -10); // rng this // glm::vec3 p2(-15, 140, -10);
-    glm::vec3 p3(0, 0, 0); // rng this
-
-    // actually just rework it to bezier 3points
-    toolbox.getBezierLine(100, &centerline, &p0, &p1, &p2); //10 here must correspond to 10 in set resolution
-    stem.setCenterline(centerline);     
-    stem.setRadius(10.0f, 1.0f);       // base -> tip
-    // tube segments on the sides (stop sign 5 increase to do circle),  amount of circles going up
-    stem.setResolution(20, 100);       
-    stem.build();*/
     std::cout << SEED << std::endl;
     ofSetRandomSeed(SEED);
 
-    
-    
+
     glm::vec3 p0, p1, p2, p3;
     toolbox.generateBezier4PointVectors(glm::vec3(0, 0, 0), p0, p1, p2, p3);
 
@@ -182,10 +168,29 @@ void ofApp::keyPressed(int key){
     stem.build();
 
     branches.clear();
-    //branch logic
-    for (int i = 0; i < 10; i++) {
+    //branch logic TODO: put this all into a sperate class
+    static std::vector<std::pair<int, float>> taken; // (index, phi)
+    taken.clear();
+    for (int i = 0; i < 15; i++) {
         int sampleCount = stem.centerline.size();
-        int index = ofRandom(5, sampleCount - 6);
+        // even-ish coverage: stratified, making a golden-angle around ring
+        const float uMin = 0.45f, uMax = 0.95f;
+        const float golden = glm::pi<float>() * (3.0f - std::sqrt(5.0f)); // 2.39996...
+
+        float uStrata = (i + ofRandom(0.15f, 0.85f)) / 15.0f;         
+        float u = glm::mix(uMin, uMax, uStrata);                     
+        int index = glm::clamp(int(u * (sampleCount - 1)), 5, sampleCount - 6);
+
+        float phi = std::fmod(i * golden, TWO_PI) + ofRandom(-0.12f, 0.12f); 
+
+        bool ok = true;
+        for (auto& p : taken) {
+            if (std::abs(p.first - index) < 3) { ok = false; break; }          
+            float dPhi = std::abs(std::remainder(phi - p.second, TWO_PI));
+            if (dPhi < 0.35f) { ok = false; break; }                             
+        }
+        if (!ok) { continue; } // just skip
+        taken.push_back({ index, phi });
 
         // local frame at that index
         glm::vec3 position = stem.centerline[index];
@@ -194,19 +199,18 @@ void ofApp::keyPressed(int key){
         glm::vec3 binormal = glm::normalize(glm::cross(tangent, normal));
         normal = glm::normalize(glm::cross(binormal, tangent));
 
-        // choose azimuth around the ring
-        float phi = ofRandom(0.0f, TWO_PI);
         glm::vec3 ringDir = std::cos(phi) * normal + std::sin(phi) * binormal;
 
-        // compiler keeps screaming so just casting it for now TODO FIX LATER
-        float u = static_cast<float>(index) / static_cast<float>(sampleCount - 1);
+        
         float localRadius = glm::mix(stem.baseRadius, stem.tipRadius, glm::clamp(u, 0.0f, 1.0f));
 
         // base point just inside the surface for now lol
         glm::vec3 basePoint = position + ringDir * (localRadius * 0.7);
 
 
-        float branchLength = ofRandom(0.25f, 0.45f) * GRASS_SPINE.maxLength * 0.5f;
+        float tipFactor = 1.0f - u;
+        float branchLength = ofRandom(0.25f, 0.45f) * GRASS_SPINE.maxLength * 0.5f * glm::mix(0.6f, 1.0f, tipFactor);
+        
         float startOut = 0.12f * branchLength;
         float startUp = 0.45f * branchLength;
         float lean = ofRandom(0.35f, 0.85f) * branchLength;
@@ -220,11 +224,14 @@ void ofApp::keyPressed(int key){
         std::vector<glm::vec3> branchLine;
         toolbox.getBezierLine(60, &branchLine, &p00, &p11, &p22);
         SweptTube branch;
+                          
         branch.setCenterline(branchLine);
-        branch.setRadius(localRadius * 0.35f, localRadius * 0.06f);
+ 
+        branch.setRadius(localRadius * glm::mix(0.20f, 0.35f, tipFactor), localRadius * glm::mix(0.04f, 0.06f, tipFactor));
         branch.setResolution(14, static_cast<int>(branchLine.size()) - 1);
         branch.build();
         branches.push_back(branch);
+        
     }
 
 }
