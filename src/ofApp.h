@@ -18,6 +18,10 @@ class ofApp : public ofBaseApp{
 		Helper toolbox;
 		SweptTube stem; // main stem
 		// potentially a vector of stems that will corellate to this one here
-		SweptTube branch;
+		std::vector<SweptTube> branches;
+		
+		ofLight light;
+
+		bool isColor = false;
 		
 };

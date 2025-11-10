@@ -18,6 +18,13 @@ void ofApp::setup(){
     ofBackground(25);
     ofEnableDepthTest();
     ofSetFrameRate(60);
+
+    ofSetSmoothLighting(true); // Smooth lighting calculation
+
+
+    // Initialize a point light
+    light.setPointLight();
+    light.setPosition(500, 500, 500); // Set the light's position
     
     /*std::vector<glm::vec3> centerline;
     glm::vec3 p0(0, 0, 0); // base
@@ -55,47 +62,51 @@ void ofApp::setup(){
     //also maybe they should be perpendicular currently haking it by having shrinking localRadius in base point by 0.7 so its like in the spine
     //and its like 2 seperate meshes maybe there is an algo to mask 2 meshes into 1? <- last part before using all the info in a ray tracer
 
-    int sampleCount = stem.centerline.size(); 
-    int index = ofRandom(5, sampleCount - 6);
+    for (int i = 0; i < 6; i++) {
 
-    // get local frame of that index
-    glm::vec3 position = stem.centerline[index];
-    glm::vec3 tangent = stem.T[index];
-    glm::vec3 normal = stem.N[index];
-    glm::vec3 binormal = glm::normalize(glm::cross(tangent, normal));
-    normal = glm::normalize(glm::cross(binormal, tangent)); 
 
-   
-    float phi = ofRandom(0.0f, TWO_PI);
-    glm::vec3 ringDir = std::cos(phi) * normal + std::sin(phi) * binormal;
+        int sampleCount = stem.centerline.size();
+        int index = ofRandom(5, sampleCount - 6);
 
-    
-    float u = static_cast<float>(index) / static_cast<float>(sampleCount - 1);
-    float localRadius = glm::mix(stem.baseRadius, stem.tipRadius, glm::clamp(u, 0.0f, 1.0f));
+        // get local frame of that index
+        glm::vec3 position = stem.centerline[index];
+        glm::vec3 tangent = stem.T[index];
+        glm::vec3 normal = stem.N[index];
+        glm::vec3 binormal = glm::normalize(glm::cross(tangent, normal));
+        normal = glm::normalize(glm::cross(binormal, tangent));
 
-    
-    glm::vec3 basePoint = position + ringDir * (localRadius * 0.7);
 
-   
-    float branchLength = ofRandom(0.25f, 0.45f) * GRASS_SPINE.maxLength * 0.5f;
-    float startOut = 0.12f * branchLength;            
-    float startUp = 0.45f * branchLength;             
-    float lean = ofRandom(0.35f, 0.85f) * branchLength;
-    float droop = ofRandom(0.00f, 0.10f) * branchLength;
+        float phi = ofRandom(0.0f, TWO_PI);
+        glm::vec3 ringDir = std::cos(phi) * normal + std::sin(phi) * binormal;
 
-    glm::vec3 p00 = basePoint;
-    glm::vec3 p11 = basePoint + ringDir * startOut + tangent * startUp;
-    glm::vec3 p22 = basePoint + ringDir * lean + tangent * (branchLength - droop);
 
-    
-    std::vector<glm::vec3> branchLine;
-    toolbox.getBezierLine(60, &branchLine, &p00, &p11, &p22);
+        float u = static_cast<float>(index) / static_cast<float>(sampleCount - 1);
+        float localRadius = glm::mix(stem.baseRadius, stem.tipRadius, glm::clamp(u, 0.0f, 1.0f));
 
-    branch.setCenterline(branchLine);
-    branch.setRadius(localRadius * 0.35f, localRadius * 0.06f);     
-    branch.setResolution(14, static_cast<int>(branchLine.size()) - 1);
-    branch.build();
-   
+
+        glm::vec3 basePoint = position + ringDir * (localRadius * 0.7);
+
+
+        float branchLength = ofRandom(0.25f, 0.45f) * GRASS_SPINE.maxLength * 0.5f;
+        float startOut = 0.12f * branchLength;
+        float startUp = 0.45f * branchLength;
+        float lean = ofRandom(0.35f, 0.85f) * branchLength;
+        float droop = ofRandom(0.00f, 0.10f) * branchLength;
+
+        glm::vec3 p00 = basePoint;
+        glm::vec3 p11 = basePoint + ringDir * startOut + tangent * startUp;
+        glm::vec3 p22 = basePoint + ringDir * lean + tangent * (branchLength - droop);
+
+
+        std::vector<glm::vec3> branchLine;
+        toolbox.getBezierLine(60, &branchLine, &p00, &p11, &p22);
+        SweptTube branch;
+        branch.setCenterline(branchLine);
+        branch.setRadius(localRadius * 0.35f, localRadius * 0.06f);
+        branch.setResolution(14, static_cast<int>(branchLine.size()) - 1);
+        branch.build();
+        branches.push_back(branch);
+    }
 }
 
 //--------------------------------------------------------------
@@ -107,26 +118,45 @@ void ofApp::update(){
 void ofApp::draw(){
     
     cam.begin();
-
+    ofEnableLighting();  // Turn on OpenGL lighting
+    light.enable();
     
     ofSetColor(60);
     // draw solid mesh
     ofSetColor(ofColor::green);  
-    stem.getMesh().draw();
-    branch.getMesh().draw();
-    ofSetColor(255, 150);
-   
-    stem.getMesh().drawWireframe();     
-    branch.getMesh().drawWireframe();
+    if (isColor) {
+        stem.getMesh().draw();
+        for (SweptTube& branch : branches) {
+            branch.getMesh().draw();
+        }
+        
+    }
+    else {
+        ofSetColor(255, 150);
 
+        stem.getMesh().drawWireframe();
+        for (SweptTube& branch : branches) {
+            branch.getMesh().drawWireframe();;
+        }
+      
+    }
+    
+    light.disable();     // Disable the light source
+    ofDisableLighting();
     cam.end();
 
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+    if (key == 'c') {
+        isColor = !isColor;
+        return;
+    }
+    
+    
     SEED++;
-    std::cout << SEED << std::endl;
+    //std::cout << SEED << std::endl;
     ofSetRandomSeed(SEED);
 
     
@@ -136,7 +166,7 @@ void ofApp::keyPressed(int key){
     // 49-51 if we do a 3point or a 4point bezier spine
     if (ofRandom(1.0f) >= 0.51) {
         toolbox.generateBezier3PointVectors(glm::vec3(0, 0, 0), p0, p1, p2);
-        std::cout << "doing 3 point" << std::endl;
+        //std::cout << "doing 3 point" << std::endl;
     }
     else {
         toolbox.generateBezier4PointVectors(glm::vec3(0, 0, 0), p0, p1, p2, p3);
@@ -151,47 +181,51 @@ void ofApp::keyPressed(int key){
     stem.setResolution(20, centerline.size() - 1);
     stem.build();
 
+    branches.clear();
     //branch logic
-    int sampleCount = stem.centerline.size();
-    int index = ofRandom(5, sampleCount - 6);
+    for (int i = 0; i < 10; i++) {
+        int sampleCount = stem.centerline.size();
+        int index = ofRandom(5, sampleCount - 6);
 
-    // local frame at that index
-    glm::vec3 position = stem.centerline[index];
-    glm::vec3 tangent = stem.T[index];
-    glm::vec3 normal = stem.N[index];
-    glm::vec3 binormal = glm::normalize(glm::cross(tangent, normal));
-    normal = glm::normalize(glm::cross(binormal, tangent));
+        // local frame at that index
+        glm::vec3 position = stem.centerline[index];
+        glm::vec3 tangent = stem.T[index];
+        glm::vec3 normal = stem.N[index];
+        glm::vec3 binormal = glm::normalize(glm::cross(tangent, normal));
+        normal = glm::normalize(glm::cross(binormal, tangent));
 
-    // choose azimuth around the ring
-    float phi = ofRandom(0.0f, TWO_PI);
-    glm::vec3 ringDir = std::cos(phi) * normal + std::sin(phi) * binormal;
+        // choose azimuth around the ring
+        float phi = ofRandom(0.0f, TWO_PI);
+        glm::vec3 ringDir = std::cos(phi) * normal + std::sin(phi) * binormal;
 
-    // compiler keeps screaming so just casting it for now TODO FIX LATER
-    float u = static_cast<float>(index) / static_cast<float>(sampleCount - 1);
-    float localRadius = glm::mix(stem.baseRadius, stem.tipRadius, glm::clamp(u, 0.0f, 1.0f));
+        // compiler keeps screaming so just casting it for now TODO FIX LATER
+        float u = static_cast<float>(index) / static_cast<float>(sampleCount - 1);
+        float localRadius = glm::mix(stem.baseRadius, stem.tipRadius, glm::clamp(u, 0.0f, 1.0f));
 
-    // base point just inside the surface for now lol
-    glm::vec3 basePoint = position + ringDir * (localRadius * 0.7);
+        // base point just inside the surface for now lol
+        glm::vec3 basePoint = position + ringDir * (localRadius * 0.7);
 
-    
-    float branchLength = ofRandom(0.25f, 0.45f) * GRASS_SPINE.maxLength * 0.5f;
-    float startOut = 0.12f * branchLength;            
-    float startUp = 0.45f * branchLength;            
-    float lean = ofRandom(0.35f, 0.85f) * branchLength;
-    float droop = ofRandom(0.00f, 0.10f) * branchLength;
 
-    glm::vec3 p00 = basePoint;
-    glm::vec3 p11 = basePoint + ringDir * startOut + tangent * startUp;
-    glm::vec3 p22 = basePoint + ringDir * lean + tangent * (branchLength - droop);
+        float branchLength = ofRandom(0.25f, 0.45f) * GRASS_SPINE.maxLength * 0.5f;
+        float startOut = 0.12f * branchLength;
+        float startUp = 0.45f * branchLength;
+        float lean = ofRandom(0.35f, 0.85f) * branchLength;
+        float droop = ofRandom(0.00f, 0.10f) * branchLength;
 
-    // sample the curve and sweep the branch 
-    std::vector<glm::vec3> branchLine;
-    toolbox.getBezierLine(60, &branchLine, &p00, &p11, &p22);
+        glm::vec3 p00 = basePoint;
+        glm::vec3 p11 = basePoint + ringDir * startOut + tangent * startUp;
+        glm::vec3 p22 = basePoint + ringDir * lean + tangent * (branchLength - droop);
 
-    branch.setCenterline(branchLine);
-    branch.setRadius(localRadius * 0.35f, localRadius * 0.06f);
-    branch.setResolution(14, static_cast<int>(branchLine.size()) - 1);
-    branch.build();
+        // sample the curve and sweep the branch 
+        std::vector<glm::vec3> branchLine;
+        toolbox.getBezierLine(60, &branchLine, &p00, &p11, &p22);
+        SweptTube branch;
+        branch.setCenterline(branchLine);
+        branch.setRadius(localRadius * 0.35f, localRadius * 0.06f);
+        branch.setResolution(14, static_cast<int>(branchLine.size()) - 1);
+        branch.build();
+        branches.push_back(branch);
+    }
 
 }
 
