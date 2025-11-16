@@ -12,6 +12,7 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 		void generateLeaves();
+		void generateStem();
 		void keyPressed(int key);
 
 
@@ -23,6 +24,7 @@ class ofApp : public ofBaseApp{
 		std::vector<Leaf> leaves;
 		ofLight light;
 
-		bool isColor = false;
+		bool showColor = false;
+		bool showAxis = true;
 		
 };

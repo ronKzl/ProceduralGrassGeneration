@@ -33,19 +33,7 @@ void ofApp::setup(){
     std::cout << SEED << std::endl;
     ofSetRandomSeed(SEED);
 
-    /* Stem logic */
-    glm::vec3 p0, p1, p2, p3;
-    toolbox.generateBezier4PointVectors(glm::vec3(0, 0, 0), p0, p1, p2, p3);
-
-    std::vector<glm::vec3> centerline;
-    toolbox.getBezierLine(100, &centerline, &p0, &p1, &p2, &p3, true); 
-    stem.setCenterline(centerline);
-    stem.setRadius(10.f, 1.f); // TODO: randomize
-    stem.setResolution(20, centerline.size() - 1);
-    stem.build();
-    /* Stem logic */
-
-
+    generateStem();
     generateLeaves();
 
 }
@@ -63,14 +51,17 @@ void ofApp::draw(){
     light.enable();
 
     // FOR TESTING ONLY
-    ofSetLineWidth(2); 
-    ofDrawAxis(1200);
+    if (showAxis) {
+        ofSetLineWidth(2);
+        ofDrawAxis(1200);
+    }
+    
 
 
     ofSetColor(60);
     // draw solid mesh
     ofSetColor(ofColor::green);  
-    if (isColor) {
+    if (showColor) {
         stem.getMesh().draw();
         for (Leaf& leaf : leaves) {
             leaf.getMesh().draw();
@@ -86,7 +77,7 @@ void ofApp::draw(){
         }
     }
     
-    light.disable();     // Disable the light source
+    light.disable();
     ofDisableLighting();
     cam.end();
 
@@ -94,40 +85,46 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+    std::cout << key << std::endl;
     if (key == 'c') {
-        isColor = !isColor;
+        showColor = !showColor;
         return;
     }
-    
+    if (key == 'a') {
+        showAxis = !showAxis;
+        return;
+    }
     
     SEED++;
     //std::cout << SEED << std::endl;
     ofSetRandomSeed(SEED);
 
-    
-    
+    generateStem();
+    generateLeaves();
+
+}
+/*
+Create the mesh for the central plant stem
+*/
+void ofApp::generateStem() {
     glm::vec3 p0, p1, p2, p3;
     bool fourBezier = false;
-    // 49-51 chance if we do a 3point or a 4point bezier spine
+    // 49% chance if we do a 3point stem
     if (ofRandom(1.0f) >= 0.51) {
         toolbox.generateBezier3PointVectors(glm::vec3(0, 0, 0), p0, p1, p2);
-        //std::cout << "doing 3 point" << std::endl;
     }
     else {
         toolbox.generateBezier4PointVectors(glm::vec3(0, 0, 0), p0, p1, p2, p3);
         fourBezier = true;
     }
-    
+
 
     std::vector<glm::vec3> centerline;
-    toolbox.getBezierLine(100, &centerline, &p0, &p1, &p2, &p3, fourBezier); 
+    toolbox.getBezierLine(100, &centerline, &p0, &p1, &p2, &p3, fourBezier);
     stem.setCenterline(centerline);
     stem.setRadius(10.f, 1.f);
     stem.setResolution(20, centerline.size() - 1);
     stem.build();
-
-    generateLeaves();
-
 }
 
 /*
@@ -137,8 +134,9 @@ void ofApp::generateLeaves() {
     leaves.clear();
     int sampleCount = stem.centerline.size();
 
-                      //TODO: randomize
-    for (int i = 0; i < 4; ++i) {  
+                      
+    int numOfLeaves = ofRandom(MIN_LEAVES, MAX_LEAVES);
+    for (int i = 0; i < numOfLeaves; ++i) {
         float u = ofRandom(0.15f, 0.45f); // leaves generate between 15% - 45% of the total stem height
         int index = glm::clamp(int(u * (sampleCount - 1)), 2, sampleCount - 3);
 

@@ -3,6 +3,10 @@
 // useful constants that are used throughout the program
 const float VECTOR_LENGTH_CUTOFF_POINT = 1e-6f;
 static unsigned long SEED = 2791677072;   // set random seed to control all the randomness
+
+
+const int MAX_LEAVES = 6;
+const int MIN_LEAVES = 2;
 // struct to vary parameters of the grass spine (maybe the branches themselves as well)
 const struct SPINE_CONFIG {
     float minLength;
