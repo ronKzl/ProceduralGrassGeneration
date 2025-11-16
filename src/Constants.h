@@ -14,8 +14,8 @@ const struct SPINE_CONFIG {
 
 // specifically for the spine can be adjusted later
 inline constexpr SPINE_CONFIG GRASS_SPINE{
-    200.0f,
-    500.f,
+    500.0f,
+    1000.f,
     0.85f,
     0.85f,
     0.35f,

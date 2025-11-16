@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "Helper.h"
 #include "SweptTube.h"
+#include "Leaf.h"
 
 class ofApp : public ofBaseApp{
 
@@ -10,7 +11,7 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
-
+		void generateLeaves();
 		void keyPressed(int key);
 
 
@@ -19,7 +20,7 @@ class ofApp : public ofBaseApp{
 		SweptTube stem; // main stem
 		// potentially a vector of stems that will corellate to this one here
 		std::vector<SweptTube> branches;
-		
+		std::vector<Leaf> leaves;
 		ofLight light;
 
 		bool isColor = false;

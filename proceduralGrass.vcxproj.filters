@@ -13,6 +13,9 @@
     <ClCompile Include="src\SweptTube.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Leaf.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -30,6 +33,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Constants.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Leaf.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

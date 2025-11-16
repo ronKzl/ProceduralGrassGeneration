@@ -4,7 +4,7 @@
 
 /*
 Swept (Volume) Surface builder for a tube structure,
-Takes a center curve 
+currently just used to represent the stem of the grass
 
 */
 class SweptTube {

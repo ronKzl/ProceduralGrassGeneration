@@ -226,6 +226,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Leaf.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\Helper.cpp" />
@@ -233,6 +234,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Constants.h" />
+    <ClInclude Include="src\Leaf.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\Helper.h" />
     <ClInclude Include="src\SweptTube.h" />
