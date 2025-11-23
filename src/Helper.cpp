@@ -1,6 +1,7 @@
 #include "Helper.h"
 #include <cmath>
 
+// return a point in 3D on 3-point or 4-point bezier curve
 glm::vec3 Helper::bezierPoint(float t, glm::vec3* p0, glm::vec3* p1, glm::vec3* p2, glm::vec3* p3, bool fourPointCalc) {
     float u = 1.0f - t;
     if (p3 != nullptr && fourPointCalc) {
@@ -8,7 +9,7 @@ glm::vec3 Helper::bezierPoint(float t, glm::vec3* p0, glm::vec3* p1, glm::vec3* 
     }
     return (pow(u, 2) * *p0) + (2 * u * t * *p1) + (pow(t, 2) * *p2); // 3 point bezier formula for a point
 }
-
+// gets x number of concrete points on a arbitrary bezier line defined between p0 - p1 - p2 - p3
 void Helper::getBezierLine(int segments, std::vector<glm::vec3>* pts, glm::vec3* p0, glm::vec3* p1, glm::vec3* p2, glm::vec3* p3, bool fourPointCalc) {
     for (int i = 0; i <= segments; i++) {
         float t = float(i) / float(segments);

@@ -91,9 +91,6 @@ void SweptTube::computeParallelTransportFrames() {
             B[i] = glm::vec3(R * glm::vec4(B[i - 1], 0.0f));
         }
         
-        // do I need to normalize again to account for conversion error??? (safe)
-        //B[i] = glm::normalize(glm::cross(T[i], N[i]));
-        //N[i] = glm::normalize(glm::cross(B[i], T[i]));
     }
 }
 
@@ -117,9 +114,12 @@ void SweptTube::generateRingsAndMesh() {
     for (int i = 0; i < numberOfRings; ++i) { //for the entire tube
         float t = (float)i / (float)(numberOfRings - 1);
         float radius = glm::mix(baseRadius, tipRadius, t);
+        ofColor DARK_GREEN(20, 50, 20);   // Dark Forest Green
+        ofColor YELLOW_GREEN(160, 200, 60);    // Light Yellow-Green
+        ofColor stemColor = DARK_GREEN.lerp(YELLOW_GREEN, t);
 
         for (int j = 0; j < numberOfRadialSegments; ++j) { //for 1 ring in the tube
-            
+           
             float theta = TWO_PI * (float)j / (float)numberOfRadialSegments;
 
             // calc ring normal (in the cross-section plane)
@@ -133,6 +133,8 @@ void SweptTube::generateRingsAndMesh() {
             mesh.addNormal(glm::normalize(n)); //use later for lighting
             // add UVs: u around, v along, will use later for lighting
             mesh.addTexCoord(glm::vec2((float)j / (float)numberOfRadialSegments, t));
+
+            mesh.addColor(stemColor);
         }
     }
 

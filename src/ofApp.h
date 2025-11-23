@@ -13,6 +13,7 @@ class ofApp : public ofBaseApp{
 		void draw();
 		void generateLeaves();
 		void generateStem();
+		void exportMesh();
 		void keyPressed(int key);
 
 
@@ -23,7 +24,7 @@ class ofApp : public ofBaseApp{
 		std::vector<SweptTube> branches;
 		std::vector<Leaf> leaves;
 		ofLight light;
-
+		ofImage grassTexture;
 		bool showColor = false;
 		bool showAxis = true;
 		

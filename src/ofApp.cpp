@@ -6,11 +6,12 @@
 take into account some characteristics of the stem when generating its leaves, like avoiding big leaves for small stems
 
 2. Look into recursive logic for the top branches of the grass, almost like tree branch like it spawns from each one
-and ends in a seedling placement.
+and ends in a seedling placement. <-- should be some recursion but tricky part on how to rotate and transform the branches
+using ofRotate and ofTranform did not really work out as expected
 
 3. Look into how to make procedural seedlings, or just approximate by sphere?
 
-4. texture & shading?
+4. texture & shading? 
 
 5. refactor & cleanup (seperate procedural generation into more functions)
 
@@ -24,12 +25,26 @@ void ofApp::setup(){
     ofSetFrameRate(60);
 
     ofSetSmoothLighting(true); // Smooth lighting calculation
+    
 
+   
+    ofDisableArbTex();
+
+    // Load texture - TODO: find better texture or just do a simple gradient
+    bool loaded = grassTexture.load("texture_leaf.jpg");
+    if (!loaded) {
+        std::cout << "Error: Could not load texture_leaf.jpg! Is it in bin/data?" << std::endl;
+    }
+    else {
+        grassTexture.getTexture().setTextureWrap(GL_REPEAT, GL_REPEAT);
+    }
 
     // Initialize a point light just for real time view
     light.setPointLight();
     light.setPosition(500, 500, 500); // Set the light's position
     
+    light.setDiffuseColor(ofColor(255, 255, 220)); 
+    light.setSpecularColor(ofColor(255, 255, 255));
     std::cout << SEED << std::endl;
     ofSetRandomSeed(SEED);
 
@@ -55,18 +70,22 @@ void ofApp::draw(){
         ofSetLineWidth(2);
         ofDrawAxis(1200);
     }
+
     
-
-
-    ofSetColor(60);
-    // draw solid mesh
-    ofSetColor(ofColor::green);  
     if (showColor) {
+        
+        if (grassTexture.isAllocated()) {
+            grassTexture.bind();
+        }
+        
         stem.getMesh().draw();
         for (Leaf& leaf : leaves) {
             leaf.getMesh().draw();
         }
         
+        if (grassTexture.isAllocated()) {
+            grassTexture.unbind();
+        }
     }
     else {
         ofSetColor(255, 150);
@@ -85,23 +104,27 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    std::cout << key << std::endl;
-    if (key == 'c') {
+    
+    if (key == 'c') { // show mesh/filled
         showColor = !showColor;
-        return;
+       
     }
-    if (key == 'a') {
+    if (key == 'a') { // show/unshow axis 
         showAxis = !showAxis;
-        return;
+        
+    }
+    if (key == 'x') { // export mesh
+        exportMesh();
+    }
+    if (key == 'r') { // go next
+        SEED++;
+        std::cout << SEED << std::endl;
+        ofSetRandomSeed(SEED);
+
+        generateStem();
+        generateLeaves();
     }
     
-    SEED++;
-    //std::cout << SEED << std::endl;
-    ofSetRandomSeed(SEED);
-
-    generateStem();
-    generateLeaves();
-
 }
 /*
 Create the mesh for the central plant stem
@@ -125,6 +148,8 @@ void ofApp::generateStem() {
     stem.setRadius(10.f, 1.f);
     stem.setResolution(20, centerline.size() - 1);
     stem.build();
+
+    
 }
 
 /*
@@ -153,8 +178,8 @@ void ofApp::generateLeaves() {
         float localRadius = glm::mix(stem.baseRadius, stem.tipRadius, glm::clamp(u, 0.0f, 1.0f));
         glm::vec3 basePoint = position + ringDir * (localRadius * 0.3f);
 
-        // length of leaf
-        float leafLength = ofRandom(0.55f, 0.85f) * GRASS_SPINE.maxLength;
+        // length of leaf                       ----- should be the stem max length not the constant max length
+        float leafLength = ofRandom(0.10f, 0.75f) * GRASS_SPINE.maxLength;
 
         // TODO:randomize all of these 
         float startOut = 0.18f * leafLength;
@@ -171,10 +196,26 @@ void ofApp::generateLeaves() {
 
         Leaf leaf;
         leaf.setCenterline(leafLine);
-        leaf.setMaxWidth(localRadius * 3.5f); // <-- TODO:randomize
+        leaf.setMaxWidth(localRadius * ofRandom(1.0f,3.5f)); 
         leaf.setOutwardDirection(ringDir);
         leaf.build();
         leaves.push_back(leaf);
     }
 }
 
+/*
+Export the procedurally generated grass piece (useful if lets say this one in particular is looking really good)
+*/
+void ofApp::exportMesh() {
+    ofMesh exportMesh;
+
+    exportMesh.append(stem.getMesh());
+
+    for (size_t i = 0; i < leaves.size(); i++) {
+        exportMesh.append(leaves[i].getMesh());
+    }
+
+    exportMesh.save("grassSample.ply");
+
+    std::cout << "Mesh exported to bin/data/grassSample.ply" << std::endl;
+}
