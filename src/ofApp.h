@@ -14,6 +14,7 @@ class ofApp : public ofBaseApp{
 		void generateLeaves();
 		void generateStem();
 		void exportMesh();
+		void generateTopBranches();
 		void keyPressed(int key);
 
 

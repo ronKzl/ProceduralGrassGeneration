@@ -50,6 +50,7 @@ void ofApp::setup(){
 
     generateStem();
     generateLeaves();
+    generateTopBranches();
 
 }
 
@@ -82,6 +83,10 @@ void ofApp::draw(){
         for (Leaf& leaf : leaves) {
             leaf.getMesh().draw();
         }
+        for (SweptTube& branch : branches) {
+            ofSetColor(0, 255, 0);
+            branch.getMesh().draw();
+        }
         
         if (grassTexture.isAllocated()) {
             grassTexture.unbind();
@@ -93,6 +98,10 @@ void ofApp::draw(){
         stem.getMesh().drawWireframe();
         for (Leaf& leaf : leaves) {
             leaf.getMesh().drawWireframe();
+        }
+        for (SweptTube& branch : branches) {
+            ofSetColor(0, 255, 0);
+            branch.getMesh().draw();
         }
     }
     
@@ -123,6 +132,7 @@ void ofApp::keyPressed(int key){
 
         generateStem();
         generateLeaves();
+        generateTopBranches();
     }
     
 }
@@ -169,7 +179,7 @@ void ofApp::generateLeaves() {
         glm::vec3 position = stem.centerline[index];
         glm::vec3 tangent = stem.T[index];
         glm::vec3 normal = stem.N[index];
-        glm::vec3 binormal = glm::normalize(glm::cross(tangent, normal));
+        glm::vec3 binormal = stem.B[index];
         normal = glm::normalize(glm::cross(binormal, tangent));
 
         float phi = ofRandom(0.0f, TWO_PI);
@@ -200,6 +210,50 @@ void ofApp::generateLeaves() {
         leaf.setOutwardDirection(ringDir);
         leaf.build();
         leaves.push_back(leaf);
+    }
+}
+
+/*
+Creates the branch like grass mesh segments found on the upper half of the decorative grass
+*/
+void ofApp::generateTopBranches() {
+    branches.clear();
+
+    // the more branches the denser it looks almost like palm grass
+    int numBranches = ofRandom(MIN_BRANCHES, MAX_BRANCHES);
+
+    for (int i = 0; i < numBranches; i++) {
+        int n = stem.centerline.size();
+        // from like 25% to 90% on the main stem the branches can generate so pick an index along there
+        int index = (int)ofRandom(n * 0.25f, n * 0.90f);
+
+        // similar to how the leaf are done get the vector info of that point from the stem
+        glm::vec3 startPos = stem.centerline[index];
+        glm::vec3 tangent = stem.T[index];
+        glm::vec3 binormal = stem.B[index];
+
+        // pick a random angle around the stem
+        float angle = ofRandom(TWO_PI);
+
+        // calculate a vector pointing out from the stem
+        glm::vec3 outward = glm::normalize(cosf(angle) * tangent + sinf(angle) * binormal);
+
+        // 0.3 outward vs 1.0 upward makes them like go along the stem
+        glm::vec3 direction = glm::normalize(outward * 0.3f + tangent * 1.0f);
+
+        // make branches longer to match the pampas reference
+        float length = ofRandom(GRASS_BRANCH.minLength, GRASS_BRANCH.maxLength);
+        glm::vec3 endPos = startPos + (direction * length);
+
+        SweptTube branch;
+        std::vector<glm::vec3> branchPoints = { startPos, endPos };
+
+        branch.setCenterline(branchPoints);
+        branch.setRadius(ofRandom(1.0f, 3.0f), 0.0f);
+        branch.setResolution(3, 1);
+        branch.build();
+
+        branches.push_back(branch);
     }
 }
 
