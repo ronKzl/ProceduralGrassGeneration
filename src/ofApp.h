@@ -15,15 +15,16 @@ class ofApp : public ofBaseApp{
 		void generateStem();
 		void exportMesh();
 		void generateTopBranches();
+		void generateSeeds();
 		void keyPressed(int key);
 
 
 		ofEasyCam cam;
 		Helper toolbox;
 		SweptTube stem; // main stem
-		// potentially a vector of stems that will corellate to this one here
 		std::vector<SweptTube> branches;
 		std::vector<Leaf> leaves;
+		std::vector<ofSpherePrimitive> seeds;
 		ofLight light;
 		ofImage grassTexture;
 		bool showColor = false;

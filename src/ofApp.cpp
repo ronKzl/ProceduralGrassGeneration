@@ -7,11 +7,11 @@ take into account some characteristics of the stem when generating its leaves, l
 
 2. Look into recursive logic for the top branches of the grass, almost like tree branch like it spawns from each one
 and ends in a seedling placement. <-- should be some recursion but tricky part on how to rotate and transform the branches
-using ofRotate and ofTranform did not really work out as expected
+using ofRotate and ofTranform did not really work out as expected -- I don't really get how to do this
 
-3. Look into how to make procedural seedlings, or just approximate by sphere?
+3. Look into how to make procedural seedlings, or just approximate by sphere? <- done
 
-4. texture & shading? 
+4. texture & shading - done - can have option to see just a generic texture and just use oF shading or model can be exported so that is done
 
 5. refactor & cleanup (seperate procedural generation into more functions)
 
@@ -51,6 +51,7 @@ void ofApp::setup(){
     generateStem();
     generateLeaves();
     generateTopBranches();
+    generateSeeds();
 
 }
 
@@ -91,6 +92,11 @@ void ofApp::draw(){
         if (grassTexture.isAllocated()) {
             grassTexture.unbind();
         }
+        ofSetColor(240, 230, 180);
+        for (ofSpherePrimitive& seed : seeds) {
+            seed.draw();
+        }
+
     }
     else {
         ofSetColor(255, 150);
@@ -103,6 +109,11 @@ void ofApp::draw(){
             ofSetColor(0, 255, 0);
             branch.getMesh().draw();
         }
+        ofSetColor(240, 230, 180);
+        for (ofSpherePrimitive& seed : seeds) {
+            seed.drawWireframe();
+        }
+        
     }
     
     light.disable();
@@ -133,6 +144,7 @@ void ofApp::keyPressed(int key){
         generateStem();
         generateLeaves();
         generateTopBranches();
+        generateSeeds();
     }
     
 }
@@ -254,6 +266,36 @@ void ofApp::generateTopBranches() {
         branch.build();
 
         branches.push_back(branch);
+    }
+}
+/*
+Place the seeds on the branches
+*/
+void ofApp::generateSeeds() {
+    seeds.clear();
+
+    for (auto& branch : branches) {
+
+        // get tip and prev point
+        glm::vec3 tip = branch.centerline.back();
+        glm::vec3 prev = branch.centerline[branch.centerline.size() - 2];
+
+        // calc the direction the branch is pointing
+        glm::vec3 direction = glm::normalize(tip - prev);
+
+        ofSpherePrimitive sphere;
+        sphere.setResolution(8);
+
+        sphere.setPosition(tip);
+
+        sphere.lookAt(tip + direction);
+
+        sphere.setScale(0.5f, 0.5f, ofRandom(2.0f,3.0f));
+
+        float size = ofRandom(2.0f, 4.0f);
+        sphere.setRadius(size);
+
+        seeds.push_back(sphere);
     }
 }
 
