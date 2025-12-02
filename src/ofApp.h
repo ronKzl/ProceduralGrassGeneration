@@ -21,15 +21,21 @@ class ofApp : public ofBaseApp{
 
 		ofEasyCam cam;
 		Helper toolbox;
+		ofLight light;
+
+		// base plant pieces
 		SweptTube stem; 
 		std::vector<SweptTube> branches;
 		std::vector<Leaf> leaves;
 		std::vector<ofSpherePrimitive> seeds;
-		ofLight light;
+		
+		
 		bool showColor = true;
 		bool showAxis = true;
-		
-		ofMesh grassMesh;   
-		ofMesh grassField;     
 		bool showField = false;
+
+		// final meshes
+		ofMesh grassMesh; // single plant mesh
+		ofMesh grassField; // mesh for an entire field of the one plant    
+		
 };

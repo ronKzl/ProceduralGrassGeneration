@@ -1,11 +1,9 @@
 #pragma once
 #include "ofMain.h"
 
-
 /*
-Swept (Volume) Surface builder for a tube structure,
-currently just used to represent the stem of the grass
-
+swept tube mesh used for the grass stem and branches
+builds a tube along a centerline using parallel transport frames
 */
 class SweptTube {
 public:
@@ -25,7 +23,7 @@ public:
     const ofMesh& getMesh() const { return mesh; }
 
     void computeParallelTransportFrames(); // build per-point frames (T, N, B)
-    void generateRingsAndMesh(); // create vertices, normals, uvs, indices
+    void generateRingsAndMesh(); // create vertices, normals and indices
     ofIndexType getVertexIndex(int ring, int col);
     
     std::vector<glm::vec3> centerline; // bezier generated centerline
@@ -33,8 +31,8 @@ public:
 
     float baseRadius; // circle radius of the base of the tube                
     float tipRadius;  //circle radius of the tip of the tube                  
-    int numberOfRadialSegments; // number of vertices that form the ring
-    int numberOfSegments; // number of ring intervals
+    int numberOfRadialSegments; // number of vertices that form each ring
+    int numberOfSegments; // number of ring intervals along the centerline
 
     ofMesh mesh;
 };
