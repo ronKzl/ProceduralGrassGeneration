@@ -18,24 +18,28 @@ class ofApp : public ofBaseApp{
 		void keyPressed(int key);
 		void glueToOneMesh();
 		void generateField();
+		void generateRandomField();
 
 		ofEasyCam cam;
 		Helper toolbox;
 		ofLight light;
+		ofLight fillLight;
 
 		// base plant pieces
 		SweptTube stem; 
 		std::vector<SweptTube> branches;
 		std::vector<Leaf> leaves;
 		std::vector<ofSpherePrimitive> seeds;
+		std::vector<ofMesh> randomSamplesField;
 		
 		
 		bool showColor = true;
 		bool showAxis = true;
+		bool showSingleModelField = false;
 		bool showField = false;
 
 		// final meshes
 		ofMesh grassMesh; // single plant mesh
-		ofMesh grassField; // mesh for an entire field of the one plant    
+		ofMesh grassField; // mesh for an entire field of a single plant
 		
 };

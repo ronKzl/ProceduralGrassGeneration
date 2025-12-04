@@ -11,9 +11,9 @@ void ofApp::setup(){
 
     light.setPointLight();
     light.setPosition(500, 500, 500); 
-    
     light.setDiffuseColor(ofColor(255, 255, 220)); 
     light.setSpecularColor(ofColor(255, 255, 255));
+
     std::cout << SEED << std::endl;
     ofSetRandomSeed(SEED);
 
@@ -38,16 +38,22 @@ void ofApp::draw(){
     }
 
     if (showColor) {
-        if (showField) {
+        if (showSingleModelField) {
             grassField.draw();
+        }
+        else if (showField){
+            for (ofMesh& m : randomSamplesField) m.draw();
         }
         else {
             grassMesh.draw();
         }
     }
     else { // show wireframe
-        if (showField) {
+        if (showSingleModelField) {
             grassField.drawWireframe();
+        }
+        else if (showField) {
+            for (ofMesh& m : randomSamplesField) m.drawWireframe();
         }
         else {
             grassMesh.drawWireframe();
@@ -64,9 +70,10 @@ void ofApp::draw(){
 
     std::string msg = "CONTROLS:\n";
     msg += "-------------------\n";
-    msg += "[G] : Toggle Field Mode (Sea of Grass)\n";
-    msg += "[R] : Regenerate Single Plant\n";
-    msg += "[C] : Toggle Color / Wireframe\n";
+    msg += "[G] : Toggle Field Mode For Current Model\n";
+    msg += "[T] : Make Random Field \n";
+    msg += "[R] : New Single Plant Model\n";
+    msg += "[C] : Toggle Color / Wireframe View\n";
     msg += "[A] : Toggle Axis\n";
     msg += "[X] : Export Mesh\n";
     msg += "\nFPS: " + ofToString(ofGetFrameRate());
@@ -94,7 +101,6 @@ void ofApp::keyPressed(int key){
         SEED++;
         std::cout << SEED << std::endl;
         ofSetRandomSeed(SEED);
-
         generateStem();
         generateLeaves();
         generateTopBranches();
@@ -102,7 +108,15 @@ void ofApp::keyPressed(int key){
         generateField();
     }
     if (key == 'g') { // show the model as a field/solo
+        showSingleModelField = !showSingleModelField;
+    }
+    if (key == 't') { // show a field of many procedurally generated grass models
         showField = !showField;
+        // only when turning on
+        if (showField) {
+            generateRandomField();
+        }
+
     }
     
 }
@@ -125,10 +139,10 @@ void ofApp::generateStem() {
     // sample the bezier curve into a polyline centerline
     std::vector<glm::vec3> centerline;
     toolbox.getBezierLine(STEM_PARAMS.bezierResolution, &centerline, &p0, &p1, &p2, &p3, fourBezier);
-    
+    float thicknessScale = ofRandom(0.6f, 1.4f);
     // feed the centerline into the swept tube to build geometry
     stem.setCenterline(centerline);
-    stem.setRadius(STEM_PARAMS.baseRadius, STEM_PARAMS.tipRadius);
+    stem.setRadius(STEM_PARAMS.baseRadius * thicknessScale, STEM_PARAMS.tipRadius * thicknessScale);
     stem.setResolution(STEM_PARAMS.radialSegments, centerline.size() - 1);
     stem.build();
 
@@ -203,7 +217,6 @@ so this is a basic version that looks okay at best)
 void ofApp::generateTopBranches() {
     branches.clear();
 
-    // the more branches the denser it looks almost like palm grass
     int numBranches = ofRandom(MIN_BRANCHES, MAX_BRANCHES);
     int sampleCount = stem.centerline.size();
 
@@ -320,7 +333,7 @@ void ofApp::generateField() {
     
     grassField.clear();
 
-    for (int i = 0; i < FIELD_PARAMS.numPlants; i++) {
+    for (int i = 0; i < FIELD_PARAMS.numSinglePlants; i++) {
 
         float x = ofRandom(-FIELD_PARAMS.range, FIELD_PARAMS.range);
         float z = ofRandom(-FIELD_PARAMS.range, FIELD_PARAMS.range);
@@ -334,6 +347,36 @@ void ofApp::generateField() {
 
         grassField.append(tempMesh);
     }
+}
+
+/*
+build a field of procedurally generated plants by making a new procedural copy for each plant
+*/
+void ofApp::generateRandomField() {
+    randomSamplesField.clear();
+    for (int i = 0; i < FIELD_PARAMS.numPlants; i++) {
+        SEED++;
+        ofSetRandomSeed(SEED);
+
+        generateStem();
+        generateLeaves();
+        generateTopBranches();
+        generateSeeds();
+        glueToOneMesh();
+       
+        float x = ofRandom(-FIELD_PARAMS.range, FIELD_PARAMS.range);
+        float z = ofRandom(-FIELD_PARAMS.range, FIELD_PARAMS.range);
+        glm::vec3 offset(x, 0, z);
+
+        ofMesh tempMesh = grassMesh;
+        for (glm::vec3& v : tempMesh.getVertices()) {
+            v += offset;
+        }
+
+        randomSamplesField.push_back(tempMesh);
+    }
+    
+
 }
 
 /*

@@ -66,7 +66,8 @@ struct SEED_CONFIG {
 static const SEED_CONFIG SEED_PARAMS;
 
 struct FIELD_CONFIG {
-    int numPlants = 250;
+    int numSinglePlants = 250;
+    int numPlants = 1000;
     float range = 2000.0f;
 };
 static const FIELD_CONFIG FIELD_PARAMS;
