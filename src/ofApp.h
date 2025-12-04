@@ -23,7 +23,6 @@ class ofApp : public ofBaseApp{
 		ofEasyCam cam;
 		Helper toolbox;
 		ofLight light;
-		ofLight fillLight;
 
 		// base plant pieces
 		SweptTube stem; 

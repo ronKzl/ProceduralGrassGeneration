@@ -42,7 +42,9 @@ void ofApp::draw(){
             grassField.draw();
         }
         else if (showField){
-            for (ofMesh& m : randomSamplesField) m.draw();
+            for (ofMesh& p : randomSamplesField) {
+                p.draw();
+            }
         }
         else {
             grassMesh.draw();
@@ -53,7 +55,9 @@ void ofApp::draw(){
             grassField.drawWireframe();
         }
         else if (showField) {
-            for (ofMesh& m : randomSamplesField) m.drawWireframe();
+            for (ofMesh& p : randomSamplesField) {
+                p.drawWireframe();
+            }
         }
         else {
             grassMesh.drawWireframe();
