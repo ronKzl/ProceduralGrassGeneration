@@ -2,7 +2,9 @@
 
 A high-performance C++ engine built with **openFrameworks** for the real-time procedural generation of organic 3D plant life. The project utilizes advanced geometric algorithms to move beyond simple randomization, creating mathematically sound and visually stable 3D meshes.
 
+## 📽 Demo Video
 [![Watch the Demo](https://img.youtube.com/vi/sy8bFXakerA/maxresdefault.jpg)](https://www.youtube.com/watch?v=sy8bFXakerA)
+*(Click the image to play the video on YouTube)*
 
 ## 🛠 Technical Highlights
 
@@ -40,4 +42,5 @@ The system supports two distinct field generation modes:
 ## 📦 Setup & Requirements
 * **Environment**: Developed using Visual Studio 2022.
 * **Framework**: Requires [openFrameworks v0.12.1+](https://openframeworks.cc/).
+
 * **Language Standard**: C++11 or later.
